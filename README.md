@@ -1,2 +1,2 @@
 # jiji_boot
-spring boot 
+spring boot 연습
