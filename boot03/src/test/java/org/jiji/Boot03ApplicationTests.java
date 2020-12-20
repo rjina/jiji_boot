@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jiji.domain.Board;
+import org.jiji.domain.QBoard;
 import org.jiji.persistence.BoardRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.querydsl.core.BooleanBuilder;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class Boot03ApplicationTests {
@@ -25,7 +28,7 @@ class Boot03ApplicationTests {
 
 	@Test
 	public void testInsert200() {
-		for (int i = 1; i <= 200; i++) {
+		for (int i = 201; i <= 400; i++) {
 			Board board = new Board();
 			board.setTitle("제목 "+i);
 			board.setContent("내용 "+i);
@@ -102,7 +105,44 @@ class Boot03ApplicationTests {
 	}
 	
 	@Test
-	void contextLoads() {
+	public void findByTitle3() {
+		repo.findByTitle3("17").forEach(arr -> System.out.println(Arrays.toString(arr)));
 	}
+	
+	@Test
+	public void testByPaging() {
+		Pageable pageable = PageRequest.of(0,10);
+		
+		repo.findBypage(pageable).forEach(board -> System.out.println(board));
+	}
+	
+	@Test
+	public void testPredicate() {
+		String type = "t";
+		String keyword = "17";
+		
+		BooleanBuilder builder = new BooleanBuilder();
+		
+		QBoard board = QBoard.board;
+		
+		if(type.equals("t")) {
+			builder.and(board.title.like("%" + keyword + "%"));			
+		}
+		
+		builder.and(board.bno.gt(0L));
+		
+		Pageable pageable = PageRequest.of(0, 10);
+		
+		Page<Board> result = repo.findAll(builder, pageable);
+		
+		System.out.println("PAGE SIZE : " + result.getSize());
+		System.out.println("TOTAL PAGES : " + result.getTotalPages());
+		System.out.println("TOTAL COUNT : " + result.getTotalElements());
+		System.out.println("NEXT : " + result.nextPageable());
+		
+		List<Board> list = result.getContent();
+		
+		list.forEach(b -> System.out.println(b));
+		}
 
 }
